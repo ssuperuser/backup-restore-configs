@@ -29,6 +29,12 @@ x86_64
 `onie-install –f -a -i <image-location>`
 9. configure the Management IP address and gateway 
 10. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf 
+11. Restore the backup configs 
+`ansible-playbook restore_configs.yml -i hosts -u cumulus -kKb`
+12. Make sure the license has been installed and configs have been restored 
+13. reboot the switch so the new configs get applied 
+
+
 
 
 
