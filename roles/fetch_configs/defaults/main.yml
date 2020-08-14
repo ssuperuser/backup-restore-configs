@@ -6,8 +6,6 @@ fetch_configs:
     src: /etc/frr/frr.conf
   - name: ports.conf
     src: /etc/cumulus/ports.conf
-  - name: frr
-    src: /etc/default/frr
   - name: interfaces
     src: /etc/network/interfaces
   - name: snmp.conf
