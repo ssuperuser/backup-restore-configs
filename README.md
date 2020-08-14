@@ -80,6 +80,8 @@ net commit
 9. copy the new image to the system 
 10. Install the new image using console access 
 
+### Important: Make sure all the configs are backed up before you perform this step
+
 `onie-install –f -a -i <image-location>`
 
 11. Using console access configure the Management IP address and gateway 
