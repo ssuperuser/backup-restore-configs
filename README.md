@@ -123,7 +123,11 @@ Check if there is change in state run the showdiff.sh script
 `./showdiff.sh` 
 
 
-
-
+18. Change the CLAG state of the switch if needed. Lower priority value is preferred, when setting clag priority. 
+```
+net add interface peerlink.4094 clag priority 32000  
+net pending 
+net commit 
+``` 
 
 
