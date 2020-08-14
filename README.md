@@ -88,7 +88,7 @@ net commit
 
 12. Restore the backup configs 
 `ansible-playbook restore_configs.yml -i hosts -u cumulus -kKb`
-13. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf 
+13. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf  (! Note: only if previous Cumulus OS verision did not have mgmt VRF by default)
 
 ```
 net add interface peerlink.4094 clag backup-ip <peer backup ip here> vrf mgmt
