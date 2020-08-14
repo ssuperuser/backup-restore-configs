@@ -11,8 +11,13 @@ cumulus@leaf01:mgmt-vrf:~$
 1. Make sure to update the license in  `backup-restore-configs/roles/install_license/tasks/main.yml` 
 2. make sure to update the `hosts` file with the correct IP addresses of the switches 
 3. Before the change backup the existing configs (! make sure you backup all important configs)
+
 `ansible-playbook fetch_configs.yml -i hosts -u cumulus -kKb`
+
+Also capture the before change state. 
+
 `ansible-playbook validation.yml -i hosts -u cumulus -kkb --extra-vars '{"validationstate":"before"}'`
+
 Note: the backups would be made in `~/configs` directory , before change state capture would be backed up in `../../changevalidationXX` directory 
 4. Make sure to make extra backup copy of the configs and the prechange validation states 
 
@@ -87,7 +92,7 @@ net commit
 ```
 
 12. Restore the backup configs 
-`ansible-playbook restore_configs.yml -i hosts -u cumulus -kKb`
+`ansible-playbook restore_configs.yml -i switchname -u cumulus -kKb`
 13. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf  (! Note: only if previous Cumulus OS verision did not have mgmt VRF by default)
 
 ```
@@ -103,6 +108,18 @@ cat /etc/network/interfaces
 # ..... other config files as necessary 
 ``` 
 15. reboot the switch so the new configs get applied 
+16. Check and Make sure all the interfaces are up as expected and the routing is working as expected 
+
+`ansible -i hosts  -m shell -a ' cl-license; uname -m; net show bgp vrf all summary; net show bgp evpn vni ; net show clag; net show inter | grep DN; systemctl status frr.service; systemctl status networking.service; ' -u cumulus   all -kKb` 
+
+17. Do the final post change verifications 
+
+`ansible-playbook validation.yml -i hosts -u cumulus -kkb --extra-vars '{"validationstate":"after"}'`
+
+Check if there is change in state run the showdiff.sh script 
+
+`./showdiff.sh` 
+
 
 
 
