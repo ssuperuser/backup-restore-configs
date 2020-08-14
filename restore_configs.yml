@@ -1,0 +1,6 @@
+---
+- hosts: switches
+  gather_facts: no
+  roles:
+    - { role: install_license}
+    - { role: restore_configs}

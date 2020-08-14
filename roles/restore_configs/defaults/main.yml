@@ -1,0 +1,17 @@
+---
+configs:
+  - name: daemons
+    dest: /etc/frr/daemons
+  - name: frr.conf
+    dest: /etc/frr/frr.conf
+  - name: ports.conf
+    dest: /etc/cumulus/ports.conf
+  - name: frr
+    dest: /etc/default/frr
+  - name: interfaces
+    dest: /etc/network/interfaces
+  - name: snmp.conf
+    dest: /etc/snmp/snmpd.conf
+
+config_backup_folder: "~/configs"
+restore: 

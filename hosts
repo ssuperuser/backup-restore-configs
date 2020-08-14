@@ -1,0 +1,5 @@
+[switches]
+leaf01 ansible_host=192.168.1.216
+leaf02 ansible_host=192.168.1.217
+[switches:vars]
+ansible_ssh_common_args='-o UserKnownHostsFile=/dev/null'

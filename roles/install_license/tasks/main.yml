@@ -1,0 +1,11 @@
+---
+- name: Install License
+  shell: echo "das@yahoo.com|this is the license"  > ~/licence.txt
+
+- name: Install License
+  shell: cl-license -i ~/licence.txt
+  register: cllicense_output
+  failed_when: ('License file installed.' not in cllicense_output.stdout)
+  notify: restart switchd
+- name: Force all notified handlers to run at this point, not waiting for normal sync points
+  meta: flush_handlers

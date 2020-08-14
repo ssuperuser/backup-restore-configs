@@ -1,0 +1,27 @@
+---
+- set_fact:
+    dest_folder: "{{ config_dest_folder }}/{{ inventory_hostname }}"
+
+
+- name: Ensure config folder exists
+  file:
+        path:  "{{ dest_folder }}/"
+        state: directory
+  delegate_to: localhost
+  changed_when: no
+  check_mode: no
+
+- debug:
+    var: config_prefix
+    verbosity: 1
+  check_mode: no
+  delegate_to: localhost
+
+- name: backup config files
+  become: yes
+  fetch:
+    dest={{ dest_folder }}/{{ item.name }}
+    src={{ item.src }}
+    flat=yes
+  loop: "{{ fetch_configs }}"
+  check_mode: no

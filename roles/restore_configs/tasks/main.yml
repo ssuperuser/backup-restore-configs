@@ -1,0 +1,31 @@
+---
+- set_fact:
+    backup_folder: "{{ config_backup_folder }}/{{ inventory_hostname }}"
+  check_mode: no
+
+- debug:
+    var: backup_folder
+    verbosity: 1
+  check_mode: no
+
+- name: Check if backups exists
+  stat:
+      path: "{{ backup_folder }}/{{ restore }}{{ item.name }}"
+  loop: "{{ configs }}"
+  register: out
+  check_mode: no
+  delegate_to: localhost
+
+- fail:
+    msg: "Backup file doesn't exist"
+  check_mode: no
+  when: not( item.stat.isreg)
+  loop: '{{ out.results }}'
+
+- name: Restore config files
+  become: yes
+  copy:
+    src={{ backup_folder }}/{{ restore }}{{ item.name }}
+    dest={{ item.dest }}
+  loop: "{{ configs }}"
+#  ignore_errors: yes

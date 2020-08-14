@@ -1,0 +1,18 @@
+---
+fetch_configs:
+  - name: daemons
+    src: /etc/frr/daemons
+  - name: frr.conf
+    src: /etc/frr/frr.conf
+  - name: ports.conf
+    src: /etc/cumulus/ports.conf
+  - name: frr
+    src: /etc/default/frr
+  - name: interfaces
+    src: /etc/network/interfaces
+  - name: snmp.conf
+    src: /etc/snmp/snmpd.conf
+
+config_dest_folder: "~/configs"
+config_prefix: ""
+reboot: no

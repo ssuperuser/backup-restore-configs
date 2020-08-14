@@ -1,0 +1,132 @@
+---
+- hosts: all
+  gather_facts: no
+  vars:  
+   validationstate: ""
+   bgpgrepinclude: "grep -v never |"
+   commonurl: "../../changevalidations{{ timestamp.stdout }}/{{inventory_hostname}}"
+   with_sedcommands:
+    - !unsafe 'sed -i "s/Default//g" * '
+    - !unsafe 'sed -i "s/NotConfigured//g" * '
+    - !unsafe 'sed -i "s/(empty)//g" * '
+    - !unsafe 'sed -i "s/ \+/ /g" * '
+    - 'cat verifybgp{{ validationstate }}temp | grep "0 0" | grep -v swp | grep -v peer > verifybgp{{ validationstate }}'
+    - "cat verifybgp{{ validationstate }}temp | grep Idle >> verifybgp{{ validationstate }}"
+    - "rev verifystaticroutes{{validationstate}} > tempverifystaticroutes{{validationstate}}; sed -i s/'^ *'//g tempverifystaticroutes{{validationstate}}; sed -i 's/[^ ]* //' tempverifystaticroutes{{validationstate}}; rev tempverifystaticroutes{{validationstate}} > verifystaticroutes{{validationstate}}; rm tempverifystaticroutes{{validationstate}};"
+  tasks:
+  - debug: 
+     msg:  variable validationstate must be set to either before or after use --extra-vars '{"validationstate":"before|after"}'
+    failed_when: validationstate == ""
+    when: validationstate == ""
+  - shell: date +%Y%m%d
+    register: timestamp
+    delegate_to: localhost
+    tags: always
+  - name: Creating directory {{ commonurl }}
+    local_action: file path={{ commonurl }} state=directory mode=0755
+  - name: verfy interface pluggable sfps
+    shell: "net show interface pluggables "
+    register: command_output
+    ignore_errors: yes
+    become: yes 
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifypluggablesfps{{ validationstate }}
+    ignore_errors: yes  
+  - name: verfy  lldp neighbors
+    shell: "net show lldp"
+    register: command_output
+    ignore_errors: yes
+    become: yes 
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifylldp{{ validationstate }}
+    ignore_errors: yes 
+  - name: verify vrf
+    shell: "net show vrf"
+    register: command_output
+    ignore_errors: yes
+    become: yes 
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyvrf{{ validationstate }}
+    ignore_errors: yes
+  - name: verify static routes for all vrfs
+    shell: "net show route vrf all static"
+    ignore_errors: yes
+    become: yes 
+    register: command_output
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifystaticroutes{{ validationstate }}
+    ignore_errors: yes
+  - name: verify BGP peers
+    #shell: !unsafe net show bgp vrf all summary | awk '{ print $1,"     " ,$2,"        ", $3,"                       " ,$9,"    ",$10}'
+    shell: "net show bgp vrf all summary "
+    register: command_output
+    ignore_errors: yes
+    become: yes 
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifybgp{{ validationstate }}temp
+    ignore_errors: yes
+  - name: verify bgp vni interfaces
+    shell: "net show bgp evpn vni"
+    register: command_output
+    become: yes 
+    ignore_errors: yes
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifybgpvniinterfaces{{ validationstate }}
+    ignore_errors: yes
+  - name: verify interfaces
+    shell: "net show interface"
+    register: command_output
+    become: yes 
+    ignore_errors: yes
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyinterfaces{{ validationstate }}
+    ignore_errors: yes
+  - name: verify clag
+    shell: "net show clag status"
+    register: command_output
+    ignore_errors: yes
+    become: yes
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyclag{{ validationstate }}
+    ignore_errors: yes
+  - name: verify ipv4 prefixlists
+    shell: "net show ip prefix-list"
+    become: yes
+    register: command_output
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyipv4prefix{{ validationstate }}
+    ignore_errors: yes  
+  - name: verify ipv6 prefixlists
+    shell: "net show ipv6 prefix-list"
+    become: yes  
+    register: command_output
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyipv6prefix{{ validationstate }}
+    ignore_errors: yes
+  - name: verify dhcp relay 
+    shell: "cat /etc/default/isc-dhcp-rela*"
+    become: yes
+    ignore_errors: yes
+    register: command_output
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifydhcprelay{{ validationstate }}
+    ignore_errors: yes
+  - name: verify neigh.conf EVPN ARP ND enteries config
+    shell: "cat  /etc/sysctl.d/neigh.conf"
+    become: yes
+    register: command_output
+    ignore_errors: yes    
+  - local_action: copy content={{ command_output.stdout_lines | to_nice_json }} dest={{ commonurl }}/verifyneighconffile{{ validationstate }}
+    ignore_errors: yes
+  - name: Using Regex to clean output
+    local_action: shell {{ item }}
+    args:
+      chdir: "{{ commonurl }}"
+    with_items: "{{ with_sedcommands }}"
+    tags: sedtest
+    ignore_errors: yes
+  - name: creating before and after diff file single file for all changes
+    local_action: shell cd {{ commonurl }}; rm before; rm after; cat *after >> after; cat *before >> before ; diff before after;    
+    when: validationstate == "after"
+    register: command_output
+    when: validationstate == "after"
+    ignore_errors: yes
+  - name: Editing .cumulusenv file so we can run ./showdiff.sh after changes are complete
+    copy:
+      dest: ".cumulusenv"
+      content: |
+        changefldr_Date="changevalidations{{ timestamp.stdout }}"
+    delegate_to: localhost
+    run_once: true
+  - debug:
+     msg: "Make sure to run this playbook validate.yml  in verbose mode -vvv to see the diffs, after changes are made, otherwise no diffs will be shown. Also can run ./showdiff.sh after changes to verify changes "
+    run_once: true
