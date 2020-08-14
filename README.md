@@ -82,7 +82,9 @@ net commit
 
 #### IMPORTANT: Make sure all the configs are backed up before you perform this step
 
-`onie-install –f -a -i <image-location>`
+`onie-install -a -f -i  <image-location>`
+
+`reboot`
 
 11. Using console access configure the Management IP address and gateway 
 
