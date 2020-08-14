@@ -73,11 +73,11 @@ net pending
 net commit 
 ```
 9. copy the new image to the system 
-10. Install the new image 
+10. Install the new image using console access 
 
 `onie-install –f -a -i <image-location>`
 
-11. configure the Management IP address and gateway 
+11. Using console access configure the Management IP address and gateway 
 
 ```
 net add interface eth0 ip address 10.250.25.x/21
@@ -95,6 +95,13 @@ net add interface peerlink.4094 clag backup-ip <peer backup ip here> vrf mgmt
 ```
 
 14. Make sure the license has been installed and configs have been restored 
+```
+cl-license 
+cat /etc/frr/daemons
+cat /etc/frr/frr.config 
+cat /etc/network/interfaces 
+# ..... other config files as necessary 
+``` 
 15. reboot the switch so the new configs get applied 
 
 
