@@ -1,6 +1,7 @@
 # backup-restore-configs
 
 ## make sure you have console access to the switch otherwise don't perform this upgrade
+### backup your licence 
 1. Make sure to update the license in  `backup-restore-configs/roles/install_license/tasks/main.yml` 
 2. make sure to update the `hosts` file with the correct IP addresses of the switches 
 3. Before the change backup the existing configs (! make sure you backup all important configs)
