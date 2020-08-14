@@ -25,12 +25,13 @@ Note: the backups would be made in `~/configs` directory , before change state c
 
 `ansible -i hosts  -m shell -a ' cl-license; uname -m; net show bgp vrf all summary;net show bgp evpn vni ; net show bgp evpn vni ; net show clag; net show inter | grep DN; systemctl status frr.service; systemctl status networking.service; net show configuration commands; cat /etc/snmp/snmpd.conf; cat /etc/frr/frr.conf; cat /etc/network/interfaces; cat /etc/cumulus/ports.conf; cat  /etc/cumulus/acl/policy.d/* ;  cat /etc/hostapd.conf ' -u cumulus   all -kKb` 
 
-6. Make sure the image is right version for your switches CPU, to check the version of your CPU if its x64 or arm use the following command
+7. Make sure the image is right version for your switches CPU, to check the version of your CPU if its x64 or arm use the following command
 
 `cumulus@leaf01:mgmt-vrf:~$ uname -m
 x86_64
 ` 
-6. Make sure if its clag peer switch the switch has the secondary roles and uplinks are shutdown
+8. Make sure if its clag peer switch the switch has the secondary roles and uplinks are shutdown
+
 ```
 net add interface peerlink.4094 clag priority 32000  
 net pending 
@@ -38,7 +39,9 @@ net commit
 ``` 
 
 Verify switch has seconday role 
+
 `net show clag` 
+
 ```
 cumulus@leaf01:mgmt-vrf:~$ net show clag
 The peer is alive
@@ -60,28 +63,34 @@ Our Interface      Peer Interface     CLAG Id   Conflicts              Proto-Dow
 cumulus@leaf01:mgmt-vrf:~$
 
 ```
+
 Shutdown the uplinks and the peerlink
+
 ```
 net add inter swpxx,swpxx link down
 net add bond peerlink link down
 net pending 
 net commit 
 ```
-7. copy the new image to the system 
-8. Install the new image 
+9. copy the new image to the system 
+10. Install the new image 
+
 `onie-install –f -a -i <image-location>`
-9. configure the Management IP address and gateway 
+
+11. configure the Management IP address and gateway 
+
 ```
 net add interface eth0 ip address 10.250.25.x/21
 net add interface eth0 ip gateway 10.250.31.254
 net pending 
 net commit 
 ```
-10. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf 
-11. Restore the backup configs 
+
+12. Restore the backup configs 
 `ansible-playbook restore_configs.yml -i hosts -u cumulus -kKb`
-12. Make sure the license has been installed and configs have been restored 
-13. reboot the switch so the new configs get applied 
+13. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf 
+14. Make sure the license has been installed and configs have been restored 
+15. reboot the switch so the new configs get applied 
 
 
 
