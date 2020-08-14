@@ -2,6 +2,12 @@
 
 ## make sure you have console access to the switch otherwise don't perform this upgrade
 ### backup your licence 
+```
+cumulus@leaf01:mgmt-vrf:~$ cl-license
+das@yahoo.com|this is the fake license
+cumulus@leaf01:mgmt-vrf:~$
+
+```
 1. Make sure to update the license in  `backup-restore-configs/roles/install_license/tasks/main.yml` 
 2. make sure to update the `hosts` file with the correct IP addresses of the switches 
 3. Before the change backup the existing configs (! make sure you backup all important configs)
@@ -24,11 +30,53 @@ Note: the backups would be made in `~/configs` directory , before change state c
 `cumulus@leaf01:mgmt-vrf:~$ uname -m
 x86_64
 ` 
+6. Make sure if its clag peer switch the switch has the secondary roles and uplinks are shutdown
+```
+net add interface peerlink.4094 clag priority 32000  
+net pending 
+net commit 
+``` 
 
+Verify switch has seconday role 
+`net show clag` 
+```
+cumulus@leaf01:mgmt-vrf:~$ net show clag
+The peer is alive
+     Our Priority, ID, and Role: 32000 44:38:39:00:00:26 secondary   <<<<<<<<<<<<<< secondary ~~
+    Peer Priority, ID, and Role: 200 44:38:39:00:00:27 primary
+          Peer Interface and IP: peerlink.4094 169.254.1.2
+               VxLAN Anycast IP: 10.0.0.112
+                      Backup IP: 10.0.0.12 (active)
+                     System MAC: 44:39:39:ff:40:94
+
+CLAG Interfaces
+Our Interface      Peer Interface     CLAG Id   Conflicts              Proto-Down Reason
+----------------   ----------------   -------   --------------------   -----------------
+           vni13   vni13              -         -                      -
+       vxlan4001   vxlan4001          -         -                      -
+          bond01   bond01             1         -                      -
+           vni24   vni24              -         -                      -
+          bond02   bond02             2         -                      -
+cumulus@leaf01:mgmt-vrf:~$
+
+```
+Shutdown the uplinks and the peerlink
+```
+net add inter swpxx,swpxx link down
+net add bond peerlink link down
+net pending 
+net commit 
+```
 7. copy the new image to the system 
 8. Install the new image 
 `onie-install –f -a -i <image-location>`
 9. configure the Management IP address and gateway 
+```
+net add interface eth0 ip address 10.250.25.x/21
+net add interface eth0 ip gateway 10.250.31.254
+net pending 
+net commit 
+```
 10. Make sure the CLAG ID config ping the backup IP on the `mgmt` vrf 
 11. Restore the backup configs 
 `ansible-playbook restore_configs.yml -i hosts -u cumulus -kKb`
