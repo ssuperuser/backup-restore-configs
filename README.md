@@ -8,7 +8,9 @@
 `ansible-playbook validation.yml -i hosts -u cumulus -kkb --extra-vars '{"validationstate":"before"}'`
 Note: the backups would be made in `~/configs` directory , before change state capture would be backed up in `../../changevalidationXX` directory 
 4. Make sure to make extra backup copy of the configs and the prechange validation states 
-`cp -r configs configs-backup`
+
+`cp -r configs configs-backup` 
+
 `cp -r changevalidationxx changevalidationxx-backup` 
 5. Make sure and confirm the backup configs look good 
 6. We can also use adhoc commands like the one below to capture the current status  (! Optional)
