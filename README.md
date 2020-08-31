@@ -84,6 +84,7 @@ net commit
 
 `onie-install -a -f -i  <image-location>`
 
+Note reboot should be type seperatly. 
 `reboot`
 
 11. Using console access configure the Management IP address and gateway 
