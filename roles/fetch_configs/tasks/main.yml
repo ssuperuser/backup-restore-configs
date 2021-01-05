@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    dest_folder: "{{ config_dest_folder }}/{{ inventory_hostname }}"
+    dest_folder: "{{ datacenter_name }}/{{ config_dest_folder }}/{{ inventory_hostname }}"
 
 
 - name: Ensure config folder exists
