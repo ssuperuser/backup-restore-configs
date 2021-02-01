@@ -10,7 +10,16 @@ fetch_configs:
     src: /etc/network/interfaces
   - name: snmp.conf
     src: /etc/snmp/snmpd.conf
-
+  - name: sflow configs hsflowd.conf 
+    src: /etc/hsflowd.conf
+  - name: dhcp relay configurations 
+    src: /etc/default/isc-dhcp-relay
+  - name: tacacs configurations 
+    src: /etc/tacplus_servers
+  - name: switchd configuration file
+    src: /etc/cumulus/switchd.conf
+  - name: backing up sysmon configuration files 
+    src: /etc/cumulus/sysmonitor.conf
 config_dest_folder: "~/configs"
 config_prefix: ""
 reboot: no
